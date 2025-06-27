@@ -1,0 +1,12 @@
+FROM python:3.12
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir \
+    asyncpg==0.29.0 \
+    web3==6.15.1 \
+    pydantic==2.6.1
+
+COPY . ./
+
+CMD ["python", "event_main.py"]

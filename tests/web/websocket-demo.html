@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Crypto Data WebSocket Demo</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .controls { margin-bottom: 20px; padding: 20px; background: #2d2d2d; border-radius: 8px; }
+        .data-display { background: #333; padding: 20px; border-radius: 8px; height: 400px; overflow-y: auto; }
+        .candle { margin-bottom: 10px; padding: 10px; background: #444; border-radius: 4px; }
+        .price-up { color: #00ff00; }
+        .price-down { color: #ff0000; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button.connected { background: #28a745; }
+        button.disconnected { background: #dc3545; }
+        select, input { padding: 8px; margin: 5px; background: #555; color: white; border: 1px solid #777; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Crypto Data WebSocket Demo</h1>
+
+        <div class="controls">
+            <label>Symbol:
+                <select id="symbolSelect">
+                    <option value="all">All Symbols</option>
+                    <option value="BTCUSDT">BTCUSDT</option>
+                    <option value="ETHUSDT">ETHUSDT</option>
+                    <option value="SOLUSDT">SOLUSDT</option>
+                    <option value="XRPUSDT">XRPUSDT</option>
+                    <option value="BNBUSDT">BNBUSDT</option>
+                </select>
+            </label>
+
+            <button id="connectBtn" onclick="toggleConnection()">Connect</button>
+            <button onclick="clearData()">Clear</button>
+
+            <div style="margin-top: 10px;">
+                <strong>Status: </strong><span id="status">Disconnected</span>
+                <strong>Messages: </strong><span id="messageCount">0</span>
+            </div>
+        </div>
+
+        <div class="data-display" id="dataDisplay">
+            <p>Click Connect to start receiving real-time data...</p>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let messageCount = 0;
+        let isConnected = false;
+
+        function toggleConnection() {
+            if (isConnected) {
+                disconnect();
+            } else {
+                connect();
+            }
+        }
+
+        function connect() {
+            const symbol = document.getElementById('symbolSelect').value;
+            const wsUrl = `ws://localhost:8022/ws?symbol=${symbol}`;
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = function(event) {
+                    isConnected = true;
+                    updateUI();
+                    addMessage(`Connected to ${symbol} data stream`, 'system');
+                };
+
+                ws.onmessage = function(event) {
+                    messageCount++;
+                    updateMessageCount();
+
+                    try {
+                        const data = JSON.parse(event.data);
+                        displayCandle(data);
+                    } catch (e) {
+                        console.error('Error parsing message:', e);
+                    }
+                };
+
+                ws.onclose = function(event) {
+                    isConnected = false;
+                    updateUI();
+                    addMessage('Connection closed', 'system');
+                };
+
+                ws.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    addMessage('Connection error', 'error');
+                };
+
+            } catch (error) {
+                console.error('Failed to connect:', error);
+                addMessage('Failed to connect', 'error');
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+                ws = null;
+            }
+        }
+
+        function updateUI() {
+            const connectBtn = document.getElementById('connectBtn');
+            const status = document.getElementById('status');
+
+            if (isConnected) {
+                connectBtn.textContent = 'Disconnect';
+                connectBtn.className = 'connected';
+                status.textContent = 'Connected';
+                status.style.color = '#00ff00';
+            } else {
+                connectBtn.textContent = 'Connect';
+                connectBtn.className = 'disconnected';
+                status.textContent = 'Disconnected';
+                status.style.color = '#ff0000';
+            }
+        }
+
+        function updateMessageCount() {
+            document.getElementById('messageCount').textContent = messageCount;
+        }
+
+        function displayCandle(data) {
+            const display = document.getElementById('dataDisplay');
+            const candleDiv = document.createElement('div');
+            candleDiv.className = 'candle';
+
+            const time = new Date(parseInt(data.timestamp)).toLocaleTimeString();
+            const priceChange = parseFloat(data.close) - parseFloat(data.open);
+            const priceClass = priceChange >= 0 ? 'price-up' : 'price-down';
+
+            candleDiv.innerHTML = `
+                <strong>${data.symbol}</strong> @ ${time}<br>
+                <span class="${priceClass}">
+                    O: ${parseFloat(data.open).toFixed(4)}
+                    H: ${parseFloat(data.high).toFixed(4)}
+                    L: ${parseFloat(data.low).toFixed(4)}
+                    C: ${parseFloat(data.close).toFixed(4)}
+                </span><br>
+                Vol: ${parseFloat(data.volume).toFixed(2)} |
+                Trades: ${data.trades}
+            `;
+
+            display.insertBefore(candleDiv, display.firstChild);
+
+            // Keep only last 50 messages
+            while (display.children.length > 50) {
+                display.removeChild(display.lastChild);
+            }
+        }
+
+        function addMessage(message, type = 'info') {
+            const display = document.getElementById('dataDisplay');
+            const msgDiv = document.createElement('div');
+            msgDiv.style.color = type === 'system' ? '#00bfff' : type === 'error' ? '#ff0000' : '#fff';
+            msgDiv.style.fontStyle = 'italic';
+            msgDiv.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+
+            display.insertBefore(msgDiv, display.firstChild);
+        }
+
+        function clearData() {
+            document.getElementById('dataDisplay').innerHTML = '<p>Data cleared...</p>';
+            messageCount = 0;
+            updateMessageCount();
+        }
+
+        // Initialize UI
+        updateUI();
+    </script>
+</body>
+</html>

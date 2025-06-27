@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg14
+    container_name: crypto_timescaledb
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-crypto_data}
+      POSTGRES_USER: ${POSTGRES_USER:-crypto_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-crypto_pass}
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - crypto_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-crypto_user} -d ${POSTGRES_DB:-crypto_data}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  order-event-processor:
+    build:
+      context: ./order_system
+      dockerfile: Dockerfile.event
+    container_name: crypto_order_events
+    network_mode: host
+    environment:
+      DB_NAME: ${POSTGRES_DB:-crypto_data}
+      DB_USER: ${POSTGRES_USER:-crypto_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-crypto_pass}
+      DB_HOST: localhost
+      DB_PORT: 5432
+      WEB3_PROVIDER: http://127.0.0.1:8545
+      LOG_LEVEL: INFO
+    restart: unless-stopped
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+  order-api:
+    build:
+      context: ./order_system
+      dockerfile: Dockerfile.api
+    container_name: crypto_order_api
+    environment:
+      DB_NAME: ${POSTGRES_DB:-crypto_data}
+      DB_USER: ${POSTGRES_USER:-crypto_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-crypto_pass}
+      DB_HOST: timescaledb
+      DB_PORT: 5432
+      API_PORT: 8080
+      LOG_LEVEL: INFO
+    ports:
+      - "8080:8080"
+    networks:
+      - crypto_network
+    restart: unless-stopped
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+
+volumes:
+  timescaledb_data:
+
+networks:
+  crypto_network:
+    driver: bridge

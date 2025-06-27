@@ -41,3 +41,11 @@ gas-report.txt
 
 reserch
 
+node_modules
+config/deployed-config.json
+doc/reserch/data
+.idea
+reserch/data
+
+__pycache__
+order_system/__pycache__

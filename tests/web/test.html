@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+
+    <script>
+        const status = document.getElementById('status');
+        const messages = document.getElementById('messages');
+
+        function log(message) {
+            const div = document.createElement('div');
+            div.textContent = new Date().toISOString() + ' - ' + message;
+            messages.appendChild(div);
+            console.log(message);
+        }
+
+        const ws = new WebSocket('ws://localhost:8022/ws?symbol=BTCUSDT');
+
+        ws.onopen = function(event) {
+            status.textContent = 'Connected ✅';
+            status.style.color = 'green';
+            log('WebSocket opened');
+        };
+
+        ws.onmessage = function(event) {
+            log('Message received: ' + event.data);
+        };
+
+        ws.onclose = function(event) {
+            status.textContent = `Disconnected ❌ (Code: ${event.code})`;
+            status.style.color = 'red';
+            log(`WebSocket closed. Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`);
+        };
+
+        ws.onerror = function(error) {
+            status.textContent = 'Error 🚨';
+            status.style.color = 'red';
+            log('WebSocket error: ' + error);
+        };
+
+        // Отправка ping каждые 30 секунд
+        setInterval(() => {
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send('ping');
+                log('Sent ping');
+            }
+        }, 30000);
+    </script>
+</body>
+</html>
