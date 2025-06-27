@@ -18,3 +18,64 @@
 # For commercial licensing, contact: licensing@linkora.info
 
 docker-compose up --build
+
+
+
+
+
+# Запуск сервисов
+# docker-compose up
+
+# Запуск в фоновом режиме
+# docker-compose up -d
+
+# Запуск с пересборкой образов
+# docker-compose up --build
+
+# Остановка и удаление контейнеров
+# docker-compose down
+
+# Остановка контейнеров без удаления
+# docker-compose stop
+
+# Запуск остановленных контейнеров
+# docker-compose start
+
+# Перезапуск контейнеров
+# docker-compose restart
+
+# Сборка всех образов
+# docker-compose build
+
+# Сборка конкретного сервиса
+# docker-compose build [service]
+
+# Сборка без использования кеша
+# docker-compose build --no-cache
+
+# Список запущенных контейнеров
+# docker-compose ps
+
+# Просмотр логов всех сервисов
+# docker-compose logs
+
+# Логи конкретного сервиса
+# docker-compose logs [service]
+
+# Следить за логами в реальном времени
+# docker-compose logs -f
+
+# Выполнение команды в запущенном контейнере
+# docker-compose exec [service] [command]
+
+# Запуск нового контейнера для выполнения команды
+# docker-compose run [service] [command]
+
+# Загрузка актуальных образов
+# docker-compose pull
+
+# Удаление контейнеров и томов
+# docker-compose down -v
+
+# Проверка конфигурации файла
+# docker-compose config

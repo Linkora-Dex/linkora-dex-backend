@@ -42,6 +42,8 @@ services:
   data-collector:
     build: ./data-collector
     container_name: crypto_data_collector
+    env_file:
+      - .env
     environment:
       DB_HOST: timescaledb
       DB_PORT: 5432
@@ -74,6 +76,8 @@ services:
   api-server:
     build: ./api-server
     container_name: crypto_api_server
+    env_file:
+      - .env
     environment:
       DB_HOST: timescaledb
       DB_PORT: 5432
@@ -109,6 +113,8 @@ services:
       context: ./order_system
       dockerfile: Dockerfile.event
     container_name: crypto_order_events
+    env_file:
+      - .env
     network_mode: host
     environment:
       DB_NAME: ${POSTGRES_DB:-crypto_data}
@@ -128,6 +134,8 @@ services:
       context: ./order_system
       dockerfile: Dockerfile.api
     container_name: crypto_order_api
+    env_file:
+      - .env
     environment:
       DB_NAME: ${POSTGRES_DB:-crypto_data}
       DB_USER: ${POSTGRES_USER:-crypto_user}

@@ -3,3 +3,4 @@ starlette==0.37.2
 web3==6.15.1
 uvicorn==0.27.1
 pydantic==2.6.1
+dotenv

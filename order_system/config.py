@@ -22,6 +22,10 @@ import os
 import json
 from typing import Dict
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 ARTIFACTS_DIR = os.path.join(os.path.dirname(__file__), 'artifacts')
 
 
