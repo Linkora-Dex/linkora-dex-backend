@@ -548,6 +548,10 @@ Details see in [LICENSING.md](./LICENSING.md)
 
 **Contact**: licensing@linkora.info
 
+## Contact Me  
+
+📫 Reach out on [LinkedIn](https://www.linkedin.com/in/yuri-kachanyuk/) or [Email](mailto:wku@ukr.net)  or [Telegram](https://t.me/trimbler)  
+
 ---
 
 ## Useful Links
